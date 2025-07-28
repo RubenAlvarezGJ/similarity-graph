@@ -1,40 +1,77 @@
 const { getLinks } = require('./utils');
-const pLimit = require('p-limit').default;
 const fs = require('fs');
+const { performance } = require('perf_hooks');
+var { Mutex, Semaphore } = require('async-mutex');
 
-const logger = new Set();
+const logger = [];
 
 async function crawl(url) {
   const queue = [{url: url, depth: 0}];
-  const visited = new Set(); // might change to some sort of hash data structure to improve performance
+  const visited = new Set();
 
-  const MAX_DEPTH = 2;
+  const MAX_DEPTH = 0;
   const CONCURRENCY_LIMIT = 15;
-  const limit = pLimit(CONCURRENCY_LIMIT);
+
+  const semaphore = new Semaphore(CONCURRENCY_LIMIT);
+  const queueMutex  = new Mutex();
+  const visitedMutex  = new Mutex();
 
   while (queue.length > 0) {
-    const urlBatch = queue.splice(0, CONCURRENCY_LIMIT);
-    const tasks = urlBatch.map(({url, depth}) => {
-      return limit(async () => {
-        if ( (depth > MAX_DEPTH) || (visited.has(url)) ) return;
+    const urlBatch = await queueMutex.runExclusive (() => queue.splice(0, CONCURRENCY_LIMIT));
+    const tasks = urlBatch.map(async ({url, depth}) => {
+        const [_, release] = await semaphore.acquire();
+        
+        try {
+          if (depth > MAX_DEPTH) return;
 
-        visited.add(url);
-        logger.add(url); // for logging the urls that have been extracted
+          let alreadyVisited = false;
+          await visitedMutex.runExclusive(async () => {
+            if (visited.has(url)) {
+              alreadyVisited = true;
+            }
+            else {
+              visited.add(url);
+              logger.push(url); // for logging the urls that have been extracted
+            }
+          });
+          
+          if (alreadyVisited) return; // skip crawling current url
 
-        const links = await getLinks(url);
+          const links = await getLinks(url); // extract links from url
 
-        for (const link of links) {
-          if (!visited.has(link)) {
-            queue.push({url: link, depth: depth + 1});
-            logger.add(link);
-          }
+          visitedMutex.runExclusive(() => { // add links to the queue if they haven't been visited
+            const toQueue = [];
+            for (const link of links) {
+              if (!visited.has(link)) {
+                toQueue.push({url: link, depth: depth + 1});
+                logger.push(link)
+              }
+            }
+
+            queueMutex.runExclusive(() => {
+              queue.push(...toQueue);
+            });
+          });
         }
-      })
+        finally {
+          release();
+        }
     });
     await Promise.all(tasks);
   }
-  const setTextContent = Array.from(logger).join('\n');
-  fs.writeFileSync('linksConcurrent.txt', setTextContent);
+  //const setTextContent = Array.from(logger).join('\n');
+  fs.writeFileSync('linksArraySafe.txt', logger.join('\n'));
+  console.log('As array:', logger.length, "\nAs set:", new Set(logger).size);
+  return logger.length;
 };
 
-crawl('https://youtube.com');
+// measuring performance
+(async () => {
+  const start = performance.now();
+
+  const numLinks = await crawl('https://youtube.com');
+
+  const end = performance.now();
+  console.log(`Execution time: ${(end - start).toFixed(3)} ms`);
+  console.log('Crawled', numLinks ," links." )
+})();

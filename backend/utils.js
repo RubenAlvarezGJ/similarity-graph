@@ -43,7 +43,7 @@ async function getLinks(source) {
       if (totalCount >= MAX_TOTAL_LINKS) return false; // breaks out early 
 
       const link = $(el).attr('href');
-      if (!link || !isValid(link)) return;
+      if (!link || !isValid(link) || (link === source)) return;
 
       const internal = isInternal(link, domain);
 

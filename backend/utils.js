@@ -68,7 +68,7 @@ function extractText($) {
 async function getData(source) {
   try {
     const domain = new URL(source).hostname;
-    const response = await axios.get(source, {timeout: 5000});
+    const response = await axios.get(source, {timeout: 10000});
     const $ = cheerio.load(response.data);
 
     const urls = extractUrls($, domain);

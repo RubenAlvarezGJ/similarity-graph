@@ -1,23 +1,60 @@
-const { getLinks } = require('./utils');
+const { getData } = require('./utils');
 const fs = require('fs');
 const { performance } = require('perf_hooks');
 var { Mutex, Semaphore } = require('async-mutex');
 
 const logger = [];
 
-async function crawl(url) {
-  const queue = [{url: url, depth: 0}];
-  const visited = new Set();
+/**
+ * Adds new URLs to the shared crawl queue if they have not been visited.
+ * It ensures thread-safe access using the provided mutexes.
+ *
+ * @param {Array} queue - The shared queue of URLs to crawl.
+ * @param {Mutex} queueMtx - Mutex to protect concurrent access to the queue.
+ * @param {Set} visitedList - A set of already visited URLs.
+ * @param {Mutex} visitedListMtx - Mutex to protect concurrent access to the visited set.
+ * @param {number} currDepth - The current depth of the URL being processed.
+ * @param {Array<string>} toEnqueue - An array of URLs to consider adding to the queue.
+ */
+async function enqueue(queue, queueMtx, visitedList, visitedListMtx, currDepth, toEnqueue){
+  await queueMtx.runExclusive(async () => {
+    const toPush = [];
+    
+    await visitedListMtx.runExclusive(() => {
+      for (const url of toEnqueue) {
+        if (!visitedList.has(url)) {
+          toPush.push({url, depth: currDepth + 1});
+        }
+      }
+    });
+    queue.push(...toPush);
+  });
+}
 
-  const MAX_DEPTH = 0;
+/**
+ * Crawls a website starting from the given source URL.
+ * Uses concurrency control to crawl pages up to a maximum depth and stores
+ * the scraped text data for each visited URL.
+ *
+ * @param {string} sourceUrl - The URL to begin crawling from.
+ * @returns {Promise<Map<string, string>>} - A map of URLs to their extracted text content.
+ */
+async function crawl(sourceUrl) {
+  const queue = [{url: sourceUrl, depth: 0}];
+  const visited = new Set();
+  const scrapedData = new Map();
+
+  const MAX_DEPTH = 2;
   const CONCURRENCY_LIMIT = 15;
 
   const semaphore = new Semaphore(CONCURRENCY_LIMIT);
   const queueMutex  = new Mutex();
   const visitedMutex  = new Mutex();
+  const dataMutex = new Mutex();
 
   while (queue.length > 0) {
     const urlBatch = await queueMutex.runExclusive (() => queue.splice(0, CONCURRENCY_LIMIT));
+
     const tasks = urlBatch.map(async ({url, depth}) => {
         const [_, release] = await semaphore.acquire();
         
@@ -31,27 +68,20 @@ async function crawl(url) {
             }
             else {
               visited.add(url);
-              logger.push(url); // for logging the urls that have been extracted
             }
           });
           
           if (alreadyVisited) return; // skip crawling current url
 
-          const links = await getLinks(url); // extract links from url
+          const data = await getData(url); // extract urls and text from url
+          const urls = data.urls;
+          const text = data.text;
 
-          visitedMutex.runExclusive(() => { // add links to the queue if they haven't been visited
-            const toQueue = [];
-            for (const link of links) {
-              if (!visited.has(link)) {
-                toQueue.push({url: link, depth: depth + 1});
-                logger.push(link)
-              }
-            }
-
-            queueMutex.runExclusive(() => {
-              queue.push(...toQueue);
-            });
+          await dataMutex.runExclusive(() => {
+            scrapedData.set(url, text);
           });
+
+          await enqueue(queue, queueMutex, visited, visitedMutex, depth, urls)
         }
         finally {
           release();
@@ -59,19 +89,22 @@ async function crawl(url) {
     });
     await Promise.all(tasks);
   }
-  //const setTextContent = Array.from(logger).join('\n');
-  fs.writeFileSync('linksArraySafe.txt', logger.join('\n'));
-  console.log('As array:', logger.length, "\nAs set:", new Set(logger).size);
-  return logger.length;
+  
+  return scrapedData;
 };
 
 // measuring performance
 (async () => {
   const start = performance.now();
 
-  const numLinks = await crawl('https://youtube.com');
+  const testMap = await crawl('https://youtube.com');
 
   const end = performance.now();
   console.log(`Execution time: ${(end - start).toFixed(3)} ms`);
-  console.log('Crawled', numLinks ," links." )
+  
+  for (const [url, text] of testMap) {
+  console.log(`URL: ${url}`);
+  console.log(`Text: ${text}`);
+  console.log('---');
+}
 })();

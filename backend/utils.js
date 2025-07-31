@@ -26,39 +26,55 @@ function isInternal(link, sourceDomain) {
   }
 }
 
-// extract a limited number of internal and external links from source url
-async function getLinks(source) {
-  try {
-    const links = [];
-    let internalCount = 0;
-    let totalCount = 0;
-    const MAX_INTERNAL = 5;
-    const MAX_TOTAL_LINKS = 10;
+// return urls from the site (maximum of MAX_TOTAL). Limits the amount of internal links to MAX_INTERAL.
+function extractUrls($, sourceDomain) {
+  let internalCount = 0;
+  let totalCount = 0;
+  const MAX_INTERNAL = 5;
+  const MAX_TOTAL = 10;
+  const urls = [];
 
+  $('a').each((_, element) => {
+    if (totalCount >= MAX_TOTAL) return false; // breaks out early 
+
+    const url = $(element).attr('href');
+    if (!url || !isValid(url)) return;
+
+    const internal = isInternal(url, sourceDomain);
+
+    if (internal && (internalCount < MAX_INTERNAL)) {
+      urls.push(url);
+      internalCount++;
+      totalCount++;
+    }
+    else if (!internal) {
+      urls.push(url);
+      totalCount++
+    } 
+  });
+
+  return urls;
+}
+
+// returns first 500 words of text from webpage.
+function extractText($) {
+  const raw = $('p, h1, h2, h3, li').text();
+  const filtered = raw.trim().split(/\s+/);
+
+  return filtered.splice(0, 500).join(' ');
+}
+
+// returns urls and text found in webpage
+async function getData(source) {
+  try {
     const domain = new URL(source).hostname;
     const response = await axios.get(source, {timeout: 5000});
     const $ = cheerio.load(response.data);
 
-    $('a').each((_, el) => {
-      if (totalCount >= MAX_TOTAL_LINKS) return false; // breaks out early 
+    const urls = extractUrls($, domain);
+    const text = extractText($);
 
-      const link = $(el).attr('href');
-      if (!link || !isValid(link) || (link === source)) return;
-
-      const internal = isInternal(link, domain);
-
-      if (internal && (internalCount < MAX_INTERNAL)) {
-        links.push(link);
-        internalCount++;
-        totalCount++;
-      }
-      else if (!internal) {
-        links.push(link);
-        totalCount++
-      }
-    });
-
-    return links;
+    return { urls, text };
   }
   catch (err) {
     if (axios.isCancel(err)) {
@@ -67,8 +83,8 @@ async function getLinks(source) {
     else {
       console.error("Error fetching data:", err);
     }
-    return [];
+    return { urls: [], text: ""};
   }
 }
 
-module.exports = { getLinks };
+module.exports = { getData, extractUrls, extractText };

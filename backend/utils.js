@@ -87,4 +87,4 @@ async function getData(source) {
   }
 }
 
-module.exports = { getData, extractUrls, extractText };
+module.exports = { getData };

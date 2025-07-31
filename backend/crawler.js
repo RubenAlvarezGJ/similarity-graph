@@ -1,9 +1,5 @@
 const { getData } = require('./utils');
-const fs = require('fs');
-const { performance } = require('perf_hooks');
-var { Mutex, Semaphore } = require('async-mutex');
-
-const logger = [];
+const { Mutex, Semaphore } = require('async-mutex');
 
 /**
  * Adds new URLs to the shared crawl queue if they have not been visited.
@@ -93,18 +89,4 @@ async function crawl(sourceUrl) {
   return scrapedData;
 };
 
-// measuring performance
-(async () => {
-  const start = performance.now();
-
-  const testMap = await crawl('https://youtube.com');
-
-  const end = performance.now();
-  console.log(`Execution time: ${(end - start).toFixed(3)} ms`);
-  
-  for (const [url, text] of testMap) {
-  console.log(`URL: ${url}`);
-  console.log(`Text: ${text}`);
-  console.log('---');
-}
-})();
+module.exports = { crawl };

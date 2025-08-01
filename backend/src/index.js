@@ -1,24 +1,40 @@
-const { crawl } = require('./crawler');
-const { getSimilarityScores } = require('./similarity');
-const { getTopScores } = require('./utils');
+const express = require("express");
+const cors = require("cors");
+const { crawl } = require("./crawler");
+const { getSimilarityScores } = require("./similarity");
+const { getTopScores } = require("./utils");
 
-(async () => {
-  const sourceUrl = 'https://nodejs.org/en'; // we want to get this from the frontend in the future
+const app = express();
+const PORT = 3000;
 
-  const data = await crawl(sourceUrl);
-  const sourceText = data.values().next().value;
+app.use(cors()); // for development purposes
 
-  getSimilarityScores(sourceText, data);
+app.get("/crawl", async (req, res) => {
+  const sourceUrl = req.query.url;
 
-  const topScores = getTopScores(data);
-
-  // sanity check: making sure scores are being calculated and mapped to urls
-  for (const [key, value] of data.entries()) {
-    console.log(`${key}: ${value}`);
-  }
-  console.log("---\nTOP SCORES:")
-  for (const [key, value] of topScores.entries()) {
-    console.log(`${key}: ${value}`);
+  if (!sourceUrl) {
+    return res.status(400).json({ error: "Missing url query parameter" });
   }
 
-})();
+  try {
+    const data = await crawl(sourceUrl);
+    const sourceText = data.values().next().value;
+
+    getSimilarityScores(sourceText, data);
+
+    const topScores = getTopScores(data);
+
+    const results = Array.from(topScores.entries()).map(([url, score]) => {
+      return { url, score };
+    });
+
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    req.status(500).json({ error: "Failed to compute similarity scores" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Backend running at http://localhost:${PORT})`);
+});

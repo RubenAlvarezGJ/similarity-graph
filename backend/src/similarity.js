@@ -1,8 +1,8 @@
-const natural = require('natural');
+const natural = require("natural");
 
 /**
  * Creates a shared vocabulary (unique word list) between two token arrays.
- * 
+ *
  * @param {string[]} sourceText - Tokenized words from the source text.
  * @param {string[]} text - Tokenized words from the comparison text.
  * @returns {string[]} Array of unique words appearing in either token list.
@@ -15,7 +15,7 @@ function createVocab(sourceText, text) {
 
 /**
  * Computes the TF-IDF vector for a piece of text using a shared vocabulary.
- * 
+ *
  * @param {object} tfidf - A natural.TfIdf instance containing all documents (texts).
  * @param {string[]} vocab - Array of all unique words across source and text.
  * @param {number} docIndex - Index of the document in the TF-IDF store.
@@ -30,7 +30,7 @@ function computeVector(tfidf, vocab, textIdx) {
 
 /**
  * Computes the cosine similarity between two numeric vectors.
- * 
+ *
  * @param {number[]} vecA - First vector.
  * @param {number[]} vecB - Second vector.
  * @returns {number} Cosine similarity score between 0 and 1 (or 0 if undefined).
@@ -44,7 +44,7 @@ function cosineSimilarity(vecA, vecB) {
 
 /**
  * Calculates cosine similarity scores between a source text and a list of documents.
- * 
+ *
  * @param {string} sourceText - The base text to compare all others against.
  * @param {Map<string, string>} data - A Map of URLs to their associated text content.
  *                                     Each value will be replaced with a similarity score (0–1).

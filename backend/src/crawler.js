@@ -1,5 +1,5 @@
-const { getData } = require('./utils');
-const { Mutex, Semaphore } = require('async-mutex');
+const { getData } = require("./utils");
+const { Mutex, Semaphore } = require("async-mutex");
 
 /**
  * Adds new URLs to the shared crawl queue if they have not been visited.
@@ -12,14 +12,21 @@ const { Mutex, Semaphore } = require('async-mutex');
  * @param {number} currDepth - The current depth of the URL being processed.
  * @param {Array<string>} toEnqueue - An array of URLs to consider adding to the queue.
  */
-async function enqueue(queue, queueMtx, visitedList, visitedListMtx, currDepth, toEnqueue){
+async function enqueue(
+  queue,
+  queueMtx,
+  visitedList,
+  visitedListMtx,
+  currDepth,
+  toEnqueue
+) {
   await queueMtx.runExclusive(async () => {
     const toPush = [];
-    
+
     await visitedListMtx.runExclusive(() => {
       for (const url of toEnqueue) {
         if (!visitedList.has(url)) {
-          toPush.push({url, depth: currDepth + 1});
+          toPush.push({ url, depth: currDepth + 1 });
         }
       }
     });
@@ -36,7 +43,7 @@ async function enqueue(queue, queueMtx, visitedList, visitedListMtx, currDepth, 
  * @returns {Promise<Map<string, string>>} - A map of URLs to their extracted text content.
  */
 async function crawl(sourceUrl) {
-  const queue = [{url: sourceUrl, depth: 0}];
+  const queue = [{ url: sourceUrl, depth: 0 }];
   const visited = new Set();
   const scrapedData = new Map();
 
@@ -44,49 +51,49 @@ async function crawl(sourceUrl) {
   const CONCURRENCY_LIMIT = 15;
 
   const semaphore = new Semaphore(CONCURRENCY_LIMIT);
-  const queueMutex  = new Mutex();
-  const visitedMutex  = new Mutex();
+  const queueMutex = new Mutex();
+  const visitedMutex = new Mutex();
   const dataMutex = new Mutex();
 
   while (queue.length > 0) {
-    const urlBatch = await queueMutex.runExclusive (() => queue.splice(0, CONCURRENCY_LIMIT));
+    const urlBatch = await queueMutex.runExclusive(() =>
+      queue.splice(0, CONCURRENCY_LIMIT)
+    );
 
-    const tasks = urlBatch.map(async ({url, depth}) => {
-        const [_, release] = await semaphore.acquire();
-        
-        try {
-          if (depth > MAX_DEPTH) return;
+    const tasks = urlBatch.map(async ({ url, depth }) => {
+      const [_, release] = await semaphore.acquire();
 
-          let alreadyVisited = false;
-          await visitedMutex.runExclusive(async () => {
-            if (visited.has(url)) {
-              alreadyVisited = true;
-            }
-            else {
-              visited.add(url);
-            }
-          });
-          
-          if (alreadyVisited) return; // skip crawling current url
+      try {
+        if (depth > MAX_DEPTH) return;
 
-          const data = await getData(url); // extract urls and text from url
-          const urls = data.urls;
-          const text = data.text;
+        let alreadyVisited = false;
+        await visitedMutex.runExclusive(async () => {
+          if (visited.has(url)) {
+            alreadyVisited = true;
+          } else {
+            visited.add(url);
+          }
+        });
 
-          await dataMutex.runExclusive(() => {
-            scrapedData.set(url, text);
-          });
+        if (alreadyVisited) return; // skip crawling current url
 
-          await enqueue(queue, queueMutex, visited, visitedMutex, depth, urls)
-        }
-        finally {
-          release();
-        }
+        const data = await getData(url); // extract urls and text from url
+        const urls = data.urls;
+        const text = data.text;
+
+        await dataMutex.runExclusive(() => {
+          scrapedData.set(url, text);
+        });
+
+        await enqueue(queue, queueMutex, visited, visitedMutex, depth, urls);
+      } finally {
+        release();
+      }
     });
     await Promise.all(tasks);
   }
-  
+
   return scrapedData;
-};
+}
 
 module.exports = { crawl };

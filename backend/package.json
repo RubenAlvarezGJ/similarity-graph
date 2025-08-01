@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "async-mutex": "^0.5.0",
+    "axios": "^1.10.0",
+    "cheerio": "^1.1.2",
+    "natural": "^8.1.0",
+    "p-limit": "^6.2.0"
+  },
+  "name": "similarity-graph",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RubenAlvarezGJ/similarity-graph.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RubenAlvarezGJ/similarity-graph/issues"
+  },
+  "homepage": "https://github.com/RubenAlvarezGJ/similarity-graph#readme"
+}

@@ -1,28 +1,21 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import UrlPreviewBox from "./UrlPreviewBox";
 
-function Results() {
+function Graph() {
   const location = useLocation();
   const navigate = useNavigate();
   const data = location.state?.data;
 
-  if (!data) {
-    navigate("/");
-    return null;
-  }
+  // if (!data) {
+  //   navigate("/");
+  //   return null;
+  // }
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h2>Results</h2>
-      <ul>
-        {data.map((item, index) => (
-          <li key={index}>
-            <strong>URL:</strong> {item.url} — <strong>Score:</strong>{" "}
-            {item.score}
-          </li>
-        ))}
-      </ul>
+    <div className="bg-dot-grid flex flex-col items-center justify-center h-screen">
+      <h2 className="text-white">Results</h2>
     </div>
   );
 }
 
-export default Results;
+export default Graph;

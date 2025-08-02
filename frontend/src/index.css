@@ -1,7 +1,55 @@
+@import "tailwindcss";
+
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+.bg-dot-grid {
+  background-color: black;
+  background-image: radial-gradient(rgb(97, 0, 136) 1px, transparent 0);
+  background-size: 100px 100px;
+  background-position: center;
+}
+
+.bg-dot-grid-glow {
+  position: relative;
+  background-color: black;
+  background-image: radial-gradient(rgba(97, 0, 136, 0.3) 1px, transparent 0);
+  background-size: 100px 100px;
+  background-position: center;
+  min-height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-dot-grid-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(97, 0, 136, 0.9) 1.5px, transparent 0);
+  background-size: 100px 100px;
+  background-position: center;
+  opacity: 0;
+  animation: glowPulse 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.text-glow {
+  text-shadow: 0 0 5px rgba(128, 0, 128, 0.8), 0 0 10px rgba(128, 0, 128, 0.6),
+    0 0 20px rgba(128, 0, 128, 0.4);
 }

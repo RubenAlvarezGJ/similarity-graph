@@ -1,8 +1,16 @@
+import { useLocation } from "react-router-dom";
+import UrlPreviewBox from "./UrlPreviewBox";
+
 function Loading() {
+  const location = useLocation();
+  const url = location.state?.url || "No URL provided";
+
   return (
-    <div className="centered">
-      <h2>Loading...</h2>
-      <p>Fetching your data, please wait.</p>
+    <div className="bg-dot-grid-glow flex flex-col items-center justify-center h-screen gap-4 text-white">
+      <div className="-mt-65 flex flex-col items-center gap-4">
+        <h1 className="text-5xl font-semibold">Fetching URLs</h1>
+        <UrlPreviewBox url={url} />
+      </div>
     </div>
   );
 }

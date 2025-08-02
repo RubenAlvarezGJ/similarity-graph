@@ -31,7 +31,7 @@ app.get("/crawl", async (req, res) => {
     res.json(results);
   } catch (err) {
     console.error(err);
-    req.status(500).json({ error: "Failed to compute similarity scores" });
+    res.status(500).json({ error: "Failed to compute similarity scores" });
   }
 });
 

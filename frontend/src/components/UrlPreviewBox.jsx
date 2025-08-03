@@ -2,11 +2,11 @@ import whiteImage from "../assets/white_box.png";
 
 function UrlPreviewBox({ url }) {
   return (
-    <div className="flex items-center gap-4 p-4 border border-white rounded-lg shadow-lg bg-black max-w-xl">
+    <div className="flex items-center gap-4 p-4 border border-white rounded-lg bg-black max-w-xl">
       <img
-        src={whiteImage} // place holder
+        src={whiteImage}
         alt="Preview"
-        className="w-18 h-18 object-cover rounded-md flex-shrink-0"
+        className="w-20 h-20 object-cover rounded-md flex-shrink-0"
       />
       <div className="break-all text-white">
         <a

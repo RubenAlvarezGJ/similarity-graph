@@ -6,7 +6,7 @@ function UrlPreviewNode({ data }) {
   const score = data?.score;
 
   return (
-    <div className="flex items-center gap-4 p-4 border border-white rounded-lg shadow-lg bg-black max-w-xl">
+    <div className="flex items-center gap-4 p-4 border border-white rounded-lg bg-black max-w-xl">
       <div className="relative w-20 h-20">
         <img
           src={whiteImage}

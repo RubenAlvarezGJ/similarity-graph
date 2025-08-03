@@ -35,9 +35,9 @@ function Home() {
   };
 
   return (
-    <div className="bg-dot-grid flex flex-col items-center justify-center h-screen gap-4 text-white">
+    <div className="bg-dot-grid flex flex-col items-center justify-center h-screen text-white">
       <form onSubmit={handleSubmit} className="-mt-70 flex flex-col gap-3">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3">
           <h1 className="text-5xl font-semibold">Enter a URL</h1>
           <input
             type="text"
@@ -49,7 +49,7 @@ function Home() {
         </div>
         <button
           type="submit"
-          className="bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-700"
+          className="bg-white text-black px-3 py-2 rounded-lg hover:bg-gray-500"
         >
           Submit
         </button>

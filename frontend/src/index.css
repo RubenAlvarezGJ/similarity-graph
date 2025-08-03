@@ -9,8 +9,8 @@ body,
 }
 
 .bg-dot-grid {
-  background-color: black;
-  background-image: radial-gradient(rgb(97, 0, 136) 1px, transparent 0);
+  background-color: rgb(0, 0, 0);
+  background-image: radial-gradient(rgb(67, 64, 67) 1px, transparent 0);
   background-size: 100px 100px;
   background-position: center;
 }
@@ -18,7 +18,7 @@ body,
 .bg-dot-grid-glow {
   position: relative;
   background-color: black;
-  background-image: radial-gradient(rgba(97, 0, 136, 0.3) 1px, transparent 0);
+  background-image: radial-gradient(rgba(49, 44, 50, 0.3) 1px, transparent 0);
   background-size: 100px 100px;
   background-position: center;
   min-height: 100vh;
@@ -30,7 +30,7 @@ body,
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(97, 0, 136, 0.9) 1.5px, transparent 0);
+  background-image: radial-gradient(rgba(67, 64, 67, 0.9) 1.5px, transparent 0);
   background-size: 100px 100px;
   background-position: center;
   opacity: 0;
@@ -47,9 +47,4 @@ body,
   50% {
     opacity: 1;
   }
-}
-
-.text-glow {
-  text-shadow: 0 0 5px rgba(128, 0, 128, 0.8), 0 0 10px rgba(128, 0, 128, 0.6),
-    0 0 20px rgba(128, 0, 128, 0.4);
 }

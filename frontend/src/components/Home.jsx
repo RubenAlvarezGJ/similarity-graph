@@ -1,12 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+function isValidUrl(str) {
+  try {
+    const url = new URL(str);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (_) {
+    return false;
+  }
+}
+
 function Home() {
   const [url, setUrl] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!isValidUrl(url)) {
+      alert("Please enter a valid URL.");
+      return;
+    }
+
     navigate("/loading", { state: { url } });
 
     try {
@@ -34,7 +49,7 @@ function Home() {
         </div>
         <button
           type="submit"
-          className="bg-white text-black px-4 py-2 rounded-lg hover:bg-purple-900"
+          className="bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-700"
         >
           Submit
         </button>

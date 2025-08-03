@@ -8,7 +8,7 @@ function UrlPreviewBox({ url }) {
         alt="Preview"
         className="w-18 h-18 object-cover rounded-md flex-shrink-0"
       />
-      <div className="break-words text-white">
+      <div className="break-all text-white">
         <a
           href={url}
           target="_blank"

@@ -27,7 +27,7 @@ app.get("/crawl", async (req, res) => {
       });
     }
 
-    const sourceText = data.values().next().value;
+    const sourceText = data.get(sourceUrl);
     getSimilarityScores(sourceText, data);
     const topScores = getTopScores(data);
 

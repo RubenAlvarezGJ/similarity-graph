@@ -1,4 +1,4 @@
-const { getData } = require("./utils");
+const { getData } = require("./utils/utils");
 const { Mutex, Semaphore } = require("async-mutex");
 
 /**
@@ -78,14 +78,22 @@ async function crawl(sourceUrl) {
         if (alreadyVisited) return; // skip crawling current url
 
         const data = await getData(url); // extract urls and text from url
-        const urls = data.urls;
-        const text = data.text;
 
-        await dataMutex.runExclusive(() => {
-          scrapedData.set(url, text);
-        });
+        // skipped flag is true if url is not allowed for crawling via robots.txt
+        if (!data.skipped) {
+          await dataMutex.runExclusive(() => {
+            scrapedData.set(url, data.text);
+          });
 
-        await enqueue(queue, queueMutex, visited, visitedMutex, depth, urls);
+          await enqueue(
+            queue,
+            queueMutex,
+            visited,
+            visitedMutex,
+            depth,
+            data.urls
+          );
+        }
       } finally {
         release();
       }

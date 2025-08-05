@@ -6,7 +6,8 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "natural": "^8.1.0",
-    "p-limit": "^6.2.0"
+    "p-limit": "^6.2.0",
+    "robots-parser": "^3.0.1"
   },
   "name": "similarity-graph",
   "version": "1.0.0",

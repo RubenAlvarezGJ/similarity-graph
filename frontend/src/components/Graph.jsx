@@ -88,6 +88,7 @@ function Graph() {
         sourceHandle,
         target: node.id,
         targetHandle,
+        animated: "true",
         style: {
           stroke: "#776d6dff",
           strokeWidth: 3,

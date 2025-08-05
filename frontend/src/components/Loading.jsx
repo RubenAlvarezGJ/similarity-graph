@@ -1,9 +1,39 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import UrlPreviewBox from "./UrlPreviewBox";
 
 function Loading() {
   const location = useLocation();
-  const url = location.state?.url || "No URL provided";
+  const navigate = useNavigate();
+  const url = location.state?.url;
+
+  useEffect(() => {
+    if (!url) {
+      navigate("/error", { state: { error: "No URL provided." } });
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          `/api/crawl?url=${encodeURIComponent(url)}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          navigate("/error", { state: { error: data.error, url } });
+          return;
+        }
+
+        navigate("/results", { state: { data } });
+      } catch (err) {
+        console.error("Fetch error:", err);
+        navigate("/error", { state: { error: "Unexpected error.", url } });
+      }
+    };
+
+    fetchData();
+  }, [url, navigate]);
 
   return (
     <div className="bg-dot-grid-glow flex flex-col items-center justify-center h-screen text-white">

@@ -23,15 +23,6 @@ function Home() {
     }
 
     navigate("/loading", { state: { url } });
-
-    try {
-      const response = await fetch(`/api/crawl?url=${encodeURIComponent(url)}`);
-      const data = await response.json();
-      navigate("/results", { state: { data } });
-    } catch (err) {
-      console.error("Failed to fetch data:", err);
-      navigate("/error");
-    }
   };
 
   return (
@@ -49,7 +40,7 @@ function Home() {
         </div>
         <button
           type="submit"
-          className="bg-white text-black px-3 py-2 rounded-lg hover:bg-gray-500"
+          className="bg-gray-300 text-black px-3 py-2 rounded-lg hover:bg-gray-500"
         >
           Submit
         </button>

@@ -25,7 +25,7 @@ function Loading() {
           return;
         }
 
-        navigate("/results", { state: { data } });
+        navigate("/results", { state: { data, url } });
       } catch (err) {
         console.error("Fetch error:", err);
         navigate("/error", { state: { error: "Unexpected error.", url } });

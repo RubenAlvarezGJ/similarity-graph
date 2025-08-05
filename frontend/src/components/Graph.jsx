@@ -17,7 +17,7 @@ function getHandleDirection(dx, dy, reversed = false) {
 function Graph() {
   const location = useLocation();
   const navigate = useNavigate();
-  const data = location.state?.data;
+  const { data, url } = location.state;
 
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
@@ -54,7 +54,7 @@ function Graph() {
       id: "node-0",
       type: "urlPreview",
       position: { x: centerX, y: centerY },
-      data: { url: data[0].url },
+      data: { url: url },
     };
 
     const surroundingNodes = data.slice(1).map((item, i, arr) => {

@@ -47,7 +47,7 @@ async function crawl(sourceUrl) {
   const visited = new Set();
   const scrapedData = new Map();
 
-  const MAX_DEPTH = 2;
+  const MAX_DEPTH = 1;
   const CONCURRENCY_LIMIT = 15;
 
   const semaphore = new Semaphore(CONCURRENCY_LIMIT);
@@ -101,7 +101,12 @@ async function crawl(sourceUrl) {
     await Promise.all(tasks);
   }
 
-  return scrapedData;
+  // need to sort for consistent TF-IDF vector calculation (current ordering is non-deterministic due to parallel fetching).
+  const sortedScrapedData = new Map(
+    [...scrapedData.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+  );
+
+  return sortedScrapedData;
 }
 
 module.exports = { crawl };

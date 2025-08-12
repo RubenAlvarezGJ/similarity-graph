@@ -47,7 +47,7 @@ async function crawl(sourceUrl) {
   const visited = new Set();
   const scrapedData = new Map();
 
-  const MAX_DEPTH = 1;
+  const MAX_DEPTH = 2;
   const CONCURRENCY_LIMIT = 15;
 
   const semaphore = new Semaphore(CONCURRENCY_LIMIT);
